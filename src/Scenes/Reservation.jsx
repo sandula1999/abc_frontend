@@ -175,7 +175,6 @@ const ReservationPage = () => {
                     fullWidth
                     id="reservationTime"
                     name="reservationTime"
-                    label="Select Reservation Time"
                     type="datetime-local"
                     value={values.reservationTime}
                     onChange={handleChange}

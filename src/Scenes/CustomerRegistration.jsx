@@ -43,7 +43,7 @@ const CustomerRegistrationPage = () => {
     <Box
       sx={{
         height: "100vh",
-        backgroundImage: "url('/background.png')", // Add your background image URL here
+        backgroundImage: "url('/image3.jpg')", // Add your background image URL here
         backgroundSize: "cover",
         backgroundPosition: "center",
         position: "relative",

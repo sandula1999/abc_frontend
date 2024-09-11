@@ -46,7 +46,7 @@ const StaffRegistrationPage = () => {
     <Box
       sx={{
         height: "100vh",
-        backgroundImage: "url('/image3.png')", // Add your background image URL here
+        backgroundImage: "url('/image3.jpg')", // Add your background image URL here
         backgroundSize: "cover",
         backgroundPosition: "center",
         position: "relative",
@@ -254,9 +254,8 @@ const StaffRegistrationPage = () => {
                           },
                         }}
                       >
-                        <MenuItem value="Manager">Manager</MenuItem>
+                        <MenuItem value="Manager">Admin</MenuItem>
                         <MenuItem value="Staff">Staff</MenuItem>
-                        <MenuItem value="Server">Server</MenuItem>
                       </Field>
                       <ErrorMessage name="role" component="div" />
                     </FormControl>

@@ -185,7 +185,7 @@ const StaffLoginPage = () => {
                     >
                       Don't have an account?{" "}
                       <a
-                        href="/customer-register"
+                        href="/staff-register"
                         style={{ color: "#ff4081" }}
                       >
                         Register
