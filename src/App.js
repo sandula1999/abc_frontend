@@ -10,6 +10,7 @@ import CustomerRegistrationPage from "./Scenes/CustomerRegistration";
 import StaffRegistrationPage from "./Scenes/StaffRegistration";
 import LoginPage from "./Scenes/Login";
 import StaffLoginPage from "./Scenes/StaffLogin";
+import MenuPage from "./Scenes/Menu";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route index path="/staff-register" element={<StaffRegistrationPage />} />
         <Route index path="/staff-login" element={<StaffLoginPage />} />
         <Route index path="/staff-dashboard" element={<StaffDashboard />} />
+        <Route index path="/menu" element={<MenuPage />} />
       </Routes>
     </div>
   );

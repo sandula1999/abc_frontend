@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -6,23 +6,17 @@ import {
   Grid,
   Card,
   CardContent,
-  CardMedia,
   TextField,
   Box,
+  Stepper,
+  Step,
+  StepLabel,
+  Paper,
 } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { getTables, updateTable } from "../Services/tableService";
 import { makeReservation } from "../Services/reservation";
-
-// Example data for tables from backend
-// const tablesData = [
-//   { capacity: 2, available: "true", type: "Regular" },
-//   { capacity: 4, available: "false", type: "Booth" },
-//   { capacity: 6, available: "true", type: "Private" },
-//   { capacity: 2, available: "true", type: "Regular" },
-//   { capacity: 4, available: "false", type: "Booth" },
-// ];
 
 // Validation schema for reservation form
 const reservationSchema = Yup.object().shape({
@@ -33,48 +27,56 @@ const reservationSchema = Yup.object().shape({
   specialRequest: Yup.string(),
 });
 
+const steps = ["Select Time", "Select Guests", "Choose Table"];
+
 const ReservationPage = () => {
+  const [activeStep, setActiveStep] = useState(0);
   const [selectedTable, setSelectedTable] = useState(null);
   const [tablesData, setTablesData] = useState([]);
   const [userId, setUserId] = useState("");
+
   useEffect(() => {
     const uID = localStorage.getItem("userId");
     setUserId(uID);
-    const fetchAllStudentData = async () => {
+
+    const fetchTablesData = async () => {
       try {
         const response = await getTables();
         setTablesData(response.data);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
-    fetchAllStudentData();
+
+    fetchTablesData();
   }, []);
+
+  const handleNext = () => setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  const handleBack = () => setActiveStep((prevActiveStep) => prevActiveStep - 1);
+
   const renderTables = () => {
     return tablesData.map((table, index) => (
-      <Grid item xs={12} sm={6} md={3} key={index}>
+      <Grid item xs={12} sm={6} md={4} key={index}>
         <Card
           sx={{
-            borderColor: table.available === true ? "green" : "red",
-            borderWidth: "2px",
-            borderStyle: "solid",
-            backgroundColor: selectedTable === index ? "#f0f0f0" : "#fff",
-            cursor: table.available === true ? "pointer" : "not-allowed",
+            backgroundColor: selectedTable === index ? "#ff4081" : "#2C2C2C",
+            color: selectedTable === index ? "#fff" : "#ddd",
+            cursor: table.available ? "pointer" : "not-allowed",
+            transform: selectedTable === index ? "scale(1.05)" : "scale(1)",
+            transition: "transform 0.3s ease, background-color 0.3s ease",
+            border: "2px solid",
+            borderColor: table.available ? "#4CAF50" : "#F44336",
+            "&:hover": table.available && { transform: "scale(1.05)" },
+            boxShadow: "0 4px 20px rgba(255, 64, 129, 0.4)", // Adding box shadow for better visibility
           }}
-          onClick={() => table.available === true && setSelectedTable(index)}
+          onClick={() => table.available && setSelectedTable(index)}
         >
-          <CardMedia
-            component="img"
-            height="140"
-            image={`https://via.placeholder.com/150/000000/FFFFFF?text=${table.type}+Table`}
-            alt={`${table.type} table`}
-          />
           <CardContent>
-            <Typography variant="h6" component="div">
+            <Typography variant="h6">
               {table.type} Table (Capacity: {table.capacity})
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {table.available === true ? "Available" : "Not Available"}
+            <Typography variant="body2">
+              {table.available ? "Available" : "Not Available"}
             </Typography>
           </CardContent>
         </Card>
@@ -85,90 +87,96 @@ const ReservationPage = () => {
   return (
     <Box
       sx={{
-        backgroundImage: `url(image1.png)`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        height: "100%",
+        backgroundColor: "#121212",
+        minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
+        padding: 4,
         color: "#fff",
-        textAlign: "center",
       }}
     >
-      <Container sx={{ my: 4 }}>
-        <Typography variant="h3" align="center" gutterBottom>
-          Make a Reservation at ABC Restaurant
-        </Typography>
-        <Typography variant="body1" align="center" sx={{ mb: 4 }}>
-          Choose your preferred reservation time, number of guests, and select a
-          table. Special requests can also be submitted.
-        </Typography>
-
-        <Formik
-          initialValues={{
-            reservationTime: "",
-            numberOfGuests: "",
-            specialRequest: "",
-          }}
-          validationSchema={reservationSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            const selectedTableData =
-              selectedTable !== null ? tablesData[selectedTable] : null;
-            if (selectedTableData) {
-              //   const dataToSubmit = {
-              //     ...values,
-              //     table: selectedTableData,
-              //   };
-              // Log the form data
-              try {
-                const test = {
-                  ...selectedTableData,
-                  available: false,
-                };
-                const tableRes = await updateTable(
-                  selectedTableData.tableId,
-                  test
-                );
-                const reservationRes = await makeReservation(
-                  userId,
-                  selectedTableData.tableId,
-                  values
-                );
-
-                alert("Successfully make your reservation!");
-              } catch (error) {
-                alert("Making reservation is unsuccessful!");
-              }
-
-              // Submit the form data to backend (you can replace this with your backend call)
-            } else {
-              console.log("No table selected");
-            }
-            setSubmitting(false); // Ensure form submission state is reset
+      <Container maxWidth="md">
+        <Paper
+          elevation={4}
+          sx={{
+            padding: 4,
+            backgroundColor: "#2C2C2C",
+            borderRadius: "15px",
+            color: "#fff",
+            boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
           }}
         >
-          {({
-            values,
-            errors,
-            touched,
-            handleChange,
-            handleSubmit,
-            isSubmitting,
-          }) => (
-            <Form onSubmit={handleSubmit}>
-              <Grid
-                container
-                spacing={4}
-                sx={{ backgroundColor: "white", padding: "20px" }}
-              >
-                <Grid item xs={12} sm={6}>
+          <Typography variant="h4" align="center" gutterBottom>
+            Make Your Reservation
+          </Typography>
+          <Stepper
+            activeStep={activeStep}
+            alternativeLabel
+            sx={{
+              marginBottom: 4,
+              "& .MuiStepLabel-label": { color: "#ff4081" },
+              "& .MuiStepIcon-root.Mui-active": { color: "#ff4081" },
+              "& .MuiStepIcon-root.Mui-completed": { color: "#4CAF50" },
+            }}
+          >
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+
+          <Formik
+            initialValues={{
+              reservationTime: "",
+              numberOfGuests: "",
+              specialRequest: "",
+            }}
+            validationSchema={reservationSchema}
+            onSubmit={async (values, { setSubmitting }) => {
+              const selectedTableData =
+                selectedTable !== null ? tablesData[selectedTable] : null;
+
+              if (selectedTableData) {
+                try {
+                  const updatedTable = {
+                    ...selectedTableData,
+                    available: false,
+                  };
+                  await updateTable(selectedTableData.tableId, updatedTable);
+                  await makeReservation(
+                    userId,
+                    selectedTableData.tableId,
+                    values
+                  );
+                  alert("Reservation successful!");
+                } catch (error) {
+                  alert("Reservation failed!");
+                }
+              } else {
+                alert("Please select a table.");
+              }
+              setSubmitting(false);
+            }}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleSubmit,
+              isSubmitting,
+            }) => (
+              <Form onSubmit={handleSubmit}>
+                {activeStep === 0 && (
                   <TextField
+                    fullWidth
                     id="reservationTime"
                     name="reservationTime"
-                    label="Reservation Time"
+                    label="Select Reservation Time"
                     type="datetime-local"
-                    fullWidth
                     value={values.reservationTime}
                     onChange={handleChange}
                     error={
@@ -177,73 +185,121 @@ const ReservationPage = () => {
                     helperText={
                       touched.reservationTime && errors.reservationTime
                     }
+                    sx={{
+                      marginBottom: 4,
+                      backgroundColor: "#fff", // Light background for form fields
+                      borderRadius: "8px",
+                    }}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                )}
+
+                {activeStep === 1 && (
                   <TextField
+                    fullWidth
                     id="numberOfGuests"
                     name="numberOfGuests"
                     label="Number of Guests"
                     type="number"
-                    fullWidth
                     value={values.numberOfGuests}
                     onChange={handleChange}
                     error={
                       touched.numberOfGuests && Boolean(errors.numberOfGuests)
                     }
                     helperText={touched.numberOfGuests && errors.numberOfGuests}
+                    sx={{
+                      marginBottom: 4,
+                      backgroundColor: "#fff", // Light background for form fields
+                      borderRadius: "8px",
+                    }}
                   />
-                </Grid>
-                <Grid item xs={12}>
+                )}
+
+                {activeStep === 2 && (
+                  <Grid container spacing={3}>
+                    {renderTables()}
+                  </Grid>
+                )}
+
+                {activeStep === 3 && (
                   <TextField
+                    fullWidth
                     id="specialRequest"
                     name="specialRequest"
                     label="Special Requests"
                     multiline
-                    rows={4}
-                    fullWidth
+                    rows={3}
                     value={values.specialRequest}
                     onChange={handleChange}
                     error={
                       touched.specialRequest && Boolean(errors.specialRequest)
                     }
-                    helperText={touched.specialRequest && errors.specialRequest}
+                    helperText={
+                      touched.specialRequest && errors.specialRequest
+                    }
+                    sx={{
+                      backgroundColor: "#fff", // Light background for form fields
+                      borderRadius: "8px",
+                    }}
                   />
-                </Grid>
-              </Grid>
+                )}
 
-              <Typography variant="h5" align="center" sx={{ my: 4 }}>
-                Available Tables
-              </Typography>
-
-              {/* Table Selection */}
-              <Grid container spacing={4}>
-                {renderTables()}
-              </Grid>
-
-              {selectedTable !== null && (
-                <Box sx={{ mt: 4, textAlign: "center" }}>
-                  <Typography variant="h6">
-                    You have selected a {tablesData[selectedTable].type} table
-                    (Capacity: {tablesData[selectedTable].capacity}).
-                  </Typography>
-                </Box>
-              )}
-
-              <Box sx={{ mt: 4, textAlign: "center" }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  disabled={selectedTable === null || isSubmitting}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: 4,
+                  }}
                 >
-                  Confirm Reservation
-                </Button>
-              </Box>
-            </Form>
-          )}
-        </Formik>
+                  <Button
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    sx={{
+                      backgroundColor: "#ff4081",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#ff6ec4",
+                      },
+                      padding: "10px 20px",
+                    }}
+                  >
+                    Back
+                  </Button>
+                  {activeStep < steps.length - 1 ? (
+                    <Button
+                      onClick={handleNext}
+                      sx={{
+                        backgroundColor: "#ff4081",
+                        color: "#fff",
+                        "&:hover": {
+                          backgroundColor: "#ff6ec4",
+                        },
+                        padding: "10px 20px",
+                      }}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={isSubmitting || selectedTable === null}
+                      sx={{
+                        backgroundColor: "#4CAF50",
+                        color: "#fff",
+                        "&:hover": {
+                          backgroundColor: "#66BB6A",
+                        },
+                        padding: "10px 20px",
+                      }}
+                    >
+                      Confirm Reservation
+                    </Button>
+                  )}
+                </Box>
+              </Form>
+            )}
+          </Formik>
+        </Paper>
       </Container>
     </Box>
   );
